@@ -1,1 +1,1 @@
-name = "yalesmartalarmclient"
+from yaleclient.client import YaleClient

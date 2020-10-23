@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import logging
-
 import requests
+import backoff
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -26,6 +26,7 @@ class YaleAuth:
     _YALE_AUTHENTICATION_ACCESS_TOKEN = 'access_token'
 
     _DEFAULT_REQUEST_TIMEOUT = 5
+    _MAX_RETRY_SECONDS = 60
 
     def __init__(self, username: str, password: str):
         self.username = username
@@ -39,6 +40,10 @@ class YaleAuth:
             "Authorization": "Bearer " + self.access_token
         }
 
+    @backoff.on_exception(backoff.expo,
+                          requests.exceptions.RequestException,
+                          max_tries=8,
+                          max_time=_MAX_RETRY_SECONDS)
     def get_authenticated(self, endpoint: str):
         """
         Execute an GET request on an endpoint.
@@ -54,15 +59,21 @@ class YaleAuth:
         if response.status_code != 200:
             self._authorize()
             response = requests.get(url, headers=self.auth_headers, timeout=self._DEFAULT_REQUEST_TIMEOUT)
+            response.raise_for_status()
 
         return response.json()
 
+    @backoff.on_exception(backoff.expo,
+                          requests.exceptions.RequestException,
+                          max_tries=8,
+                          max_time=_MAX_RETRY_SECONDS)
     def post_authenticated(self, endpoint: str, params: dict = None):
         url = self._HOST + endpoint
         response = requests.post(url, headers=self.auth_headers, data=params, timeout=self._DEFAULT_REQUEST_TIMEOUT)
         if response.status_code != 200:
             self._authorize()
             response = requests.post(url, headers=self.auth_headers, data=params, timeout=self._DEFAULT_REQUEST_TIMEOUT)
+            response.raise_for_status()
 
         return response.json()
 
@@ -80,6 +91,10 @@ class YaleAuth:
         else:
             _LOGGER.debug("Unable to fetch services")
 
+    @backoff.on_exception(backoff.expo,
+                          requests.exceptions.RequestException,
+                          max_tries=8,
+                          max_time=_MAX_RETRY_SECONDS)
     def _authorize(self):
         if self.refresh_token:
             payload = {
@@ -100,6 +115,7 @@ class YaleAuth:
         _LOGGER.debug("Attempting authorization")
 
         response = requests.post(url, headers=headers, data=payload, timeout=self._DEFAULT_REQUEST_TIMEOUT)
+        response.raise_for_status()
         data = response.json()
         _LOGGER.debug(f"Authorization response: {data}")
         if data.get("error"):

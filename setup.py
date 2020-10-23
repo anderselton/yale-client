@@ -15,7 +15,7 @@ setuptools.setup(
     download_url='https://github.com/anderselton/yale-client',
     keywords=['alarm', 'Yale', 'Smart Alarm', 'Lock', 'doorman'],
     package_data={'': ['data/*.json']},
-    install_requires=['requests>=2.0.0'],
+    install_requires=['requests>=2.0.0', 'backoff>=1.10.0'],
     packages=setuptools.find_packages(),
     include_package_data=True,
     zip_safe=False,

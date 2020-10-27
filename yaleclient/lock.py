@@ -10,14 +10,14 @@ class YaleLockState(Enum):
 
 
 class YaleLock:
-    DEVICE_TYPE = "device_type.door_lock"
-    """ 
+    """
     This is an abstraction of a remove Yale lock.
     The object created by this class attempts to reflect the remote state, and also has the possibilty of 
     locking/unlocking the lock state.
     
     Objects of this class shall usually be craeted by the lock_api class.
     """
+    DEVICE_TYPE: str = "device_type.door_lock"
 
     def __init__(self, device: dict, lock_api):
         self._lock_api = lock_api
@@ -42,16 +42,16 @@ class YaleLock:
         self.name = device['name']
         self._state = self._calc_state()
 
-    def state(self):
+    def state(self) -> YaleLockState:
         return self._state
 
     def area(self):
         return self._device['area']
 
-    def sid(self):
+    def sid(self) -> str:
         return self._device['address']
 
-    def device_type(self):
+    def device_type(self) -> str:
         return self._device['type']
 
     def zone(self):
@@ -61,6 +61,10 @@ class YaleLock:
         self._state = new_state
 
     def _calc_state(self):
+        """
+        This internal method calculate the locks state.
+        Meant to be called after we get a payload from remote lock, then we can figure out its state.
+        """
         state = self._device['status1']
 
         lock_status_str = self._device['minigw_lock_status']
@@ -82,15 +86,21 @@ class YaleLock:
             state = YaleLockState.UNKNOWN
         return state
 
+    def is_locked(self):
+        return self._state == YaleLockState.LOCKED
+
     def close(self):
         """
         Attempt to close the remote lock.
-        Returns:
-
+        Returns: True if the operation was a success
         """
         return self._lock_api.close_lock(lock=self)
 
     def open(self, pin_code: str):
+        """
+        Attempt to open the remote lock.
+        Returns: True if the operation was a success
+        """
         return self._lock_api.open_lock(lock=self, pin_code=pin_code)
 
 
@@ -99,8 +109,9 @@ class YaleDoorManAPI:
     Represents the yale doorman api.
 
     Example: iterating
-        >>> client = YaleClient(username, password)
-        >>> for lock in client.lock.locks():
+        >>> from yaleclient import YaleClient
+        >>> client = YaleClient(username="", password="")
+        >>> for lock in client.lock_api.locks():
         >>>     print(f"{lock}")
         >>>     lock.close()
         >>>     print(f"{lock}")
@@ -110,11 +121,12 @@ class YaleDoorManAPI:
         myfrontdoor [YaleLockState.UNLOCKED]
 
     Example: getting
-        >>> client = YaleClient(username, password)
-        >>> lock = client.lock.get("myfrondoor"):
-        >>> print(f"{lock}")
+        >>> from yaleclient import YaleClient
+        >>> client = YaleClient(username="", password="")
+        >>> lock = client.lock_api.get("myfrondoor"):
+        >>> print(lock)
         >>> lock.close()
-        >>> print(f"{lock}")
+        >>> print(lock)
         >>> lock.open()
         myfrontdoor [YaleLockState.UNLOCKED]
         myfrontdoor [YaleLockState.LOCKED]
@@ -137,9 +149,10 @@ class YaleDoorManAPI:
         Yields: the locks
 
         Example:
-            >>> client = YaleClient(username, password)
-            >>> for lock in client.lock.locks():
-            >>>     print(f"{lock}")
+            >>> from yaleclient import YaleClient
+            >>> client = YaleClient(username="", password="")
+            >>> for lock in client.lock_api.locks():
+            >>>     print(lock)
             myfrontdoor [YaleLockState.UNLOCKED]
         """
         devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
@@ -160,9 +173,10 @@ class YaleDoorManAPI:
             or None
 
         Example:
-            >>> client = YaleClient(username, password)
-            >>> lock = client.lock.get("myfrontdoor"):
-            >>> print(f"{lock}")
+            >>> from yaleclient import YaleClient
+            >>> client = YaleClient(username="", password="")
+            >>> lock = client.lock_api.get("myfrontdoor"):
+            >>> print(lock)
             myfrontdoor [YaleLockState.UNLOCKED]
         """
         for lock in self.locks():
@@ -181,10 +195,11 @@ class YaleDoorManAPI:
         Returns: True if the operation was a success.
 
         Example:
-            >>> client = YaleClient(username, password)
-            >>> lock = client.lock.get("myfrontdoor"):
-            >>> client.lock.close_lock(lock)
-            >>> print(f"{lock}")
+            >>> from yaleclient import YaleClient
+            >>> client = YaleClient(username="", password="")
+            >>> lock = client.lock_api.get("myfrontdoor"):
+            >>> client.lock_api.close_lock(lock)
+            >>> print(lock)
             myfrontdoor [YaleLockState.LOCKED]
         """
         params = {
@@ -204,6 +219,8 @@ class YaleDoorManAPI:
         """
         Opens the specified lock.
         If the operation is a success the local state of lock will be updated to reflect this.
+        Notes:
+            the lock object has methods to do this, see YaleLock:open()
         Args:
             lock: the lock to open
             pin_code: a valid pin code for the door.
@@ -212,10 +229,11 @@ class YaleDoorManAPI:
             True if the operation was a success.
 
         Example:
-            >>> client = YaleClient(username, password)
-            >>> lock = client.lock.get("myfrontdoor"):
-            >>> client.lock.open_lock(lock, pin_code="123456")
-            >>> print(f"{lock}")
+            >>> from yaleclient import YaleClient
+            >>> client = YaleClient(username="", password="")
+            >>> lock = client.lock_api.get("myfrontdoor"):
+            >>> client.lock_api.open_lock(lock, pin_code="123456")
+            >>> print(lock)
             myfrontdoor [YaleLockState.UNLOCKED]
         """
         params = {

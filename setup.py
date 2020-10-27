@@ -6,7 +6,10 @@ with open("README.md", "r") as fh:
 setuptools.setup(
     name='yaleclient',
     py_modules=['yaleclient'],
-    version='0.2.1',
+    version='0.2.2',
+    entry_points={
+        "console_scripts": ['yale-cli = yaleclient.cli:main']
+    },
     description='Interact with Yale systems',
     long_description=long_description,
     long_description_content_type="text/markdown",

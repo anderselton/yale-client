@@ -58,6 +58,18 @@ mydoor2 [YaleLockState.LOCKED]
 > yaleclient --api=ALARM --help
 ```
 
+### Common errors
+#### yale-client not found!
+```bash
+python3 -c "import yaleclient; print(yaleclient.__file__.split('lib')[0] + 'bin/')"
+```
+Check that the folder printed out contains yale-cli.  Add it to $PATH
+
+Optionally run
+````bash
+python -m yaleclient
+````
+
 ## Programming api
 ### Usage
 Create a client with:

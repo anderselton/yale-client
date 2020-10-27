@@ -27,7 +27,7 @@ by doing a pip install:
 ```bash
 pip install yaleclient
 ```
-The cli optionally reads these variables from envrionment, so you do not have to 
+The yale-cli optionally reads these variables from envrionment, so you do not have to 
 specify them as arguments.
 * YALE_USERNAME
 * YALE_PASSWORD
@@ -39,23 +39,23 @@ specify them as arguments.
 > export YALE_PASSWORD=bar
 > export LOCK_PIN_CODE=123456
 
-> yaleclient --api=LOCK --operation=STATUS --lock_id=mydoor
+> yale-cli --api=LOCK --operation=STATUS --lock_id=mydoor
 mydoor [YaleLockState.LOCKED]
 
-> yaleclient --api=LOCK --operation=STATUS
+> yale-cli --api=LOCK --operation=STATUS
 mydoor [YaleLockState.LOCKED]
 mydoor2 [YaleLockState.LOCKED]
 
-> yaleclient --api=LOCK --operation=OPEN
+> yale-cli --api=LOCK --operation=OPEN
 mydoor [YaleLockState.OPEN]
 mydoor2 [YaleLockState.OPEN]
 
-> yaleclient --api=LOCK --operation=CLOSE
+> yale-cli --api=LOCK --operation=CLOSE
 mydoor [YaleLockState.LOCKED]
 mydoor2 [YaleLockState.LOCKED]
 
-> yaleclient --api=LOCK --help
-> yaleclient --api=ALARM --help
+> yale-cli --api=LOCK --help
+> yale-cli --api=ALARM --help
 ```
 
 ### Common errors
@@ -65,10 +65,10 @@ python3 -c "import yaleclient; print(yaleclient.__file__.split('lib')[0] + 'bin/
 ```
 Check that the folder printed out contains yale-cli.  Add it to $PATH
 
-Optionally run
-````bash
-python -m yaleclient
-````
+Optionally run ```python -m yaleclient``` instead of ``yale-cli``.
+```bash
+python -m yaleclient --api=LOCK --help
+```
 
 ## Programming api
 ### Usage
